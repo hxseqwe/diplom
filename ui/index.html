@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASE Core: Архитектор CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #030712;
+            --panel-bg: #0b0f19;
+            --panel-accent: #111827;
+            --accent-color: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.15);
+            --text-color: #f3f4f6;
+            --text-muted: #6b7280;
+            --border-color: #1f2937;
+            --border-hover: #374151;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        .app-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #070a13;
+            border-right: 1px solid var(--border-color);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .project-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .project-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .project-card h4 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .project-card .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .main-content {
+            padding: 50px;
+            max-width: 1400px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff 40%, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 15px;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        @media (min-width: 1150px) {
+            .workspace { grid-template-columns: 1fr 1.4fr; }
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            height: fit-content;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .panel h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+        }
+
+        .form-group { margin-bottom: 24px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #9ca3af;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #05070f;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            color: #fff;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        button.btn-generate {
+            background: linear-gradient(135deg, var(--accent-color), #059669);
+            color: #030712;
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        button.btn-generate:hover {
+            opacity: 0.95;
+            transform: scale(0.99);
+        }
+
+        .placeholder-text {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 60px 20px;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .result-item {
+            margin-bottom: 24px;
+            border-bottom: 1px solid #111827;
+            padding-bottom: 16px;
+        }
+        .result-item:last-of-type { border: none; }
+
+        .badge-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        
+        .badge {
+            background-color: #111827;
+            border: 1px solid var(--border-color);
+            color: #e5e7eb;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .complexity-value {
+            font-weight: 700;
+            color: var(--accent-color);
+            background: var(--accent-glow);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 6px 14px;
+            border-radius: 8px;
+            display: inline-block;
+            font-size: 13px;
+        }
+
+        .tabs-nav {
+            display: flex;
+            gap: 6px;
+            background: #05070f;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            margin-top: 12px;
+        }
+
+        .tab-btn {
+            background: none;
+            color: var(--text-muted);
+            border: none;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            width: auto;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .tab-btn:hover { color: #fff; }
+
+        .tab-btn.active {
+            background-color: var(--panel-accent);
+            color: #fff;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-content {
+            display: none;
+            position: relative;
+            background-color: #05070f;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .tab-content.active { display: block; }
+
+        pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: #a7f3d0;
+            white-space: pre-wrap;
+            max-height: 400px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: auto;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--panel-accent);
+            color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .copy-btn:hover { background: var(--border-hover); border-color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <div class="sidebar">
+        <h3>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            История генераций
+        </h3>
+        <div id="historyList"></div>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <h1>CASE Core Studio</h1>
+            <p>Умный парсинг спецификаций, синтез реляционных баз данных и генерация моделей кода</p>
+        </header>
+
+        <div class="workspace">
+            <div class="panel">
+                <h2>Параметры спецификации</h2>
+                <div class="form-group">
+                    <label for="projName">Проект / Заказчик</label>
+                    <input type="text" id="projName" placeholder="Например: СмартДоставка">
+                </div>
+                <div class="form-group">
+                    <label for="srcText">Текст технического задания (ТЗ)</label>
+                    <textarea id="srcText" rows="11" placeholder="Опишите требования. Например: Нужно хранить клиентов, их email и адреса. Будут продажи и сделки с бюджетом, а также складской учет товаров..."></textarea>
+                </div>
+                <button id="btnSubmit" class="btn-generate" onclick="runAnalysis()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Запустить синтез архитектуры
+                </button>
+            </div>
+
+            <div class="panel">
+                <h2>Результаты синтеза</h2>
+                <div id="placeholder" class="placeholder-text">
+                    Система ожидает ввод ТЗ для проектирования компонентов
+                </div>
+                
+                <div id="resultBlock" style="display: none;">
+                    <div class="result-item">
+                        <label>Метрика сложности:</label>
+                        <div style="margin-top: 6px;">
+                            <div id="resComplexity" class="complexity-value">Базовая</div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <label>Функциональные домены ядра:</label>
+                        <div id="resModules" class="badge-container"></div>
+                    </div>
+
+                    <div class="result-item">
+                        <label>Идентифицированные сущности:</label>
+                        <div id="resEntities" class="badge-container"></div>
+                    </div>
+
+                    <div class="tabs-nav">
+                        <button class="tab-btn active" onclick="switchTab('sqlTab', this)">
+                            SQL DDL
+                        </button>
+                        <button class="tab-btn" onclick="switchTab('goTab', this)">
+                            Go Модели
+                        </button>
+                        <button class="tab-btn" onclick="switchTab('apiTab', this)">
+                            REST Спецификация
+                        </button>
+                    </div>
+
+                    <div id="sqlTab" class="tab-content active">
+                        <button class="copy-btn" onclick="copyText('resSql')">Копировать</button>
+                        <pre><code id="resSql"></code></pre>
+                    </div>
+
+                    <div id="goTab" class="tab-content">
+                        <button class="copy-btn" onclick="copyText('resGo')">Копировать</button>
+                        <pre><code id="resGo" style="color: #60a5fa;"></code></pre>
+                    </div>
+
+                    <div id="apiTab" class="tab-content">
+                        <button class="copy-btn" onclick="copyText('resApi')">Копировать</button>
+                        <pre><code id="resApi" style="color: #f87171;"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", loadHistory);
+
+    async function loadHistory() {
+        try {
+            const response = await fetch('/api/projects');
+            if (!response.ok) return;
+            const projects = await response.json();
+            
+            const container = document.getElementById('historyList');
+            container.innerHTML = projects && projects.length > 0
+                ? projects.map((p, idx) => {
+                    window[`proj_${idx}`] = p;
+                    return `
+                    <div class="project-card" onclick="renderStaticData(window.proj_${idx})">
+                        <h4>${p.project_name}</h4>
+                        <div class="meta">
+                            <span>${p.complexity}</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                    </div>
+                `}).join('')
+                : '<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:20px;">История пуста</div>';
+        } catch (e) { console.error(e); }
+    }
+
+    async function runAnalysis() {
+        const name = document.getElementById('projName').value.trim();
+        const text = document.getElementById('srcText').value.trim();
+        const btn = document.getElementById('btnSubmit');
+        
+        if (!name || !text) { alert('Пожалуйста, укажите имя проекта и требования!'); return; }
+        btn.innerHTML = `<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="10"></circle></svg> Анализ и синтез...`;
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_name: name, source_text: text })
+            });
+            if (!response.ok) throw new Error('Ошибка обработки на сервере');
+            const data = await response.json();
+            showResults(data);
+            loadHistory();
+        } catch (error) { alert(error.message); } 
+        finally { 
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Запустить синтез архитектуры`; 
+            btn.disabled = false; 
+        }
+    }
+
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes spin { to { transform: rotate(360deg); } }`;
+    document.head.appendChild(style);
+
+    function showResults(data) {
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('resultBlock').style.display = 'block';
+        document.getElementById('resComplexity').innerText = data.complexity;
+
+        document.getElementById('resModules').innerHTML = data.modules.map(m => `<span class="badge">${m}</span>`).join('');
+        document.getElementById('resEntities').innerHTML = data.entities.map(e => `<span class="badge" style="border-color:rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.02);">${e}</span>`).join('');
+        
+        document.getElementById('resSql').innerText = data.sql_schema;
+        document.getElementById('resGo').innerText = data.go_structs;
+        document.getElementById('resApi').innerText = data.api_doc;
+    }
+
+    function renderStaticData(project) {
+        showResults(project);
+    }
+
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    function copyText(elementId) {
+        const code = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(code);
+        alert('Успешно скопировано в буфер!');
+    }
+</script>
+</body>
+</html>
